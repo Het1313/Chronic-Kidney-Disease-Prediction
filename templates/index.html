@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronic Kidney Disease Prediction</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input {
+            padding: 5px;
+            width: 100%;
+            margin-top: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Chronic Kidney Disease Prediction</h1>
+        <form id="prediction-form">
+            <div class="form-group">
+                <label for="age">Age</label>
+                <input type="number" id="age" name="age" required>
+            </div>
+            <div class="form-group">
+                <label for="bp">Blood Pressure</label>
+                <input type="number" id="bp" name="bp" required>
+            </div>
+            <div class="form-group">
+                <label for="bgr">Blood Glucose Level</label>
+                <input type="number" id="bgr" name="bgr" required>
+            </div>
+            <div class="form-group">
+                <label for="bu">Blood Urea</label>
+                <input type="number" id="bu" name="bu" required>
+            </div>
+            <div class="form-group">
+                <label for="sc">Serum Creatinine</label>
+                <input type="number" id="sc" name="sc" required>
+            </div>
+            <div class="form-group">
+                <label for="hemo">Hemoglobin</label>
+                <input type="number" id="hemo" name="hemo" required>
+            </div>
+            <div class="form-group">
+                <label for="htn">Hypertension (yes 1/no 0)</label>
+                <input type="text" id="htn" name="htn" required>
+            </div>
+            <div class="form-group">
+                <label for="dm">Diabetes Mellitus (yes 1/no 0)</label>
+                <input type="text" id="dm" name="dm" required>
+            </div>
+            <div class="form-group">
+                <label for="appet">Appetite (good 1/poor 0)</label>
+                <input type="text" id="appet" name="appet" required>
+            </div>
+            <button type="submit">Predict</button>
+        </form>
+
+        <div class="result" id="result">
+            <!-- Prediction result will be displayed here -->
+        </div>
+
+        <div class="error" id="error-message"></div>
+
+        <div class="download">
+            <button id="download-button" style="display:none;">Download Report</button>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Handle form submission
+            $('#prediction-form').on('submit', function(event) {
+                event.preventDefault();
+                
+                var formData = {
+                    age: $('#age').val(),
+                    bp: $('#bp').val(),
+                    bgr: $('#bgr').val(),
+                    bu: $('#bu').val(),
+                    sc: $('#sc').val(),
+                    hemo: $('#hemo').val(),
+                    htn: $('#htn').val(),
+                    dm: $('#dm').val(),
+                    appet: $('#appet').val()
+                };
+
+                $.ajax({
+                    url: '/predict',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function(response) {
+                        if (response.error) {
+                            $('#error-message').text(response.error);
+                            $('#result').html('');
+                        } else {
+                            $('#result').html(`
+                                <p><strong>Diagnosis:</strong> ${response.diagnosis}</p>
+                                <p><strong>Confidence:</strong> ${response.confidence}%</p>
+                                <p><strong>Risk Level:</strong> ${response.risk_level}</p>
+                            `);
+                            $('#download-button').show();
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        $('#error-message').text('Error occurred while making the prediction.');
+                    }
+                });
+            });
+
+            // Handle download report button click
+            $('#download-button').on('click', function() {
+                window.location.href = '/download_report';
+            });
+        });
+    </script>
+</body>
+</html>
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronic Kidney Disease Prediction</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #333131, #0800ff);
+            color: #0c00f9;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 12px;
+            padding: 30px;
+            width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+        }
+
+        .form-group input[type="number"] {
+            font-size: 18px;
+        }
+
+        button {
+            width: 105%;
+            padding: 12px;
+            border: none;
+            background-color: #323b9c;
+            color: white;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0c00f9;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #333;
+            border-radius: 8px;
+            display: none;
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .result h3 {
+            margin-bottom: 10px;
+        }
+
+        .result p {
+            font-size: 18px;
+        }
+
+        .result .risk {
+            font-weight: bold;
+            color: #ff4d4d;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>CKD Risk Prediction</h1>
+    <form id="predictionForm">
+        <div class="form-group">
+            <label for="age">Age</label>
+            <input type="number" id="age" name="age" required>
+        </div>
+        <div class="form-group">
+            <label for="bp">Blood Pressure</label>
+            <input type="number" id="bp" name="bp" required>
+        </div>
+        <div class="form-group">
+            <label for="bgr">Blood Glucose Level</label>
+            <input type="number" id="bgr" name="bgr" required>
+        </div>
+        <div class="form-group">
+            <label for="bu">Blood Urea</label>
+            <input type="number" id="bu" name="bu" required>
+        </div>
+        <div class="form-group">
+            <label for="sc">Serum Creatinine</label>
+            <input type="number" id="sc" name="sc" required>
+        </div>
+        <div class="form-group">
+            <label for="hemo">Hemoglobin Level</label>
+            <input type="number" id="hemo" name="hemo" required>
+        </div>
+        <div class="form-group">
+            <label for="htn">Hypertension (1 = Yes, 0 = No)</label>
+            <input type="number" id="htn" name="htn" required>
+        </div>
+        <div class="form-group">
+            <label for="dm">Diabetes Mellitus (1 = Yes, 0 = No)</label>
+            <input type="number" id="dm" name="dm" required>
+        </div>
+        <div class="form-group">
+            <label for="appet">Appetite (1 = Good, 0 = Poor)</label>
+            <input type="number" id="appet" name="appet" required>
+        </div>
+        <button type="submit">Predict Risk</button>
+    </form>
+
+    <div class="result" id="result">
+        <h3>Diagnosis: <span id="diagnosis"></span></h3>
+        <p>Confidence: <span id="confidence"></span>%</p>
+        <p class="risk">Risk Level: <span id="riskLevel"></span></p>
+    </div>
+</div>
+
+<script>
+    document.getElementById('predictionForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        const data = {};
+
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
+
+        const response = await fetch('/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (result.diagnosis) {
+            document.getElementById('diagnosis').textContent = result.diagnosis;
+            document.getElementById('confidence').textContent = result.confidence;
+            document.getElementById('riskLevel').textContent = result.risk_level;
+
+            document.getElementById('result').style.display = 'block';
+        }
+    });
+</script>
+
+</body>
+</html> -->
